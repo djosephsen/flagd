@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/open-feature/flagd/compare/core/v0.10.1...core/v0.10.2) (2024-07-12)
+
+
+### ✨ New Features
+
+* added new grpc sync config option to allow setting max receive message size. ([#1358](https://github.com/open-feature/flagd/issues/1358)) ([bed077b](https://github.com/open-feature/flagd/commit/bed077bac9da3b6e3bd45ca54046e40a595fcba6))
+
 ## [0.10.1](https://github.com/open-feature/flagd/compare/core/v0.10.0...core/v0.10.1) (2024-07-08)
 
 
