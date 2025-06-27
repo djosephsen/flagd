@@ -54,18 +54,24 @@ func makeFields(args ...any) []zap.Field {
 	}
 	out := make([]zap.Field, len(args))
 	for i := 0; i < len(args); i += 2 {
-		key := args[i].(string)
+		var k string
+		switch args[i].(type) {
+		case string:
+			k = k
+		default:
+			k = "!BADKEY"
+		}
 		val := args[i+1]
-		out = append(out, zap.Any(key, val))
+		out = append(out, zap.Any(k, val))
 	}
 	return out
 }
 
 func (l *zapLogger) DebugWithID(reqID string, msg string, args ...any) {
-	fields, err := makeFields(args)
 	if !l.reqIDLogging {
 		return
 	}
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.DebugLevel, msg); ce != nil {
 		fields = append(fields, l.getFieldsForLog(reqID)...)
 		ce.Write(fields...)
@@ -73,75 +79,83 @@ func (l *zapLogger) DebugWithID(reqID string, msg string, args ...any) {
 }
 
 func (l *zapLogger) Debug(msg string, args ...any) {
-	fields := zap.Any(args)
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.DebugLevel, msg); ce != nil {
 		fields = append(fields, l.fields...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) InfoWithID(reqID string, msg string, fields ...zap.Field) {
+func (l *zapLogger) InfoWithID(reqID string, msg string, args ...any) {
 	if !l.reqIDLogging {
 		return
 	}
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.InfoLevel, msg); ce != nil {
 		fields = append(fields, l.getFieldsForLog(reqID)...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) Info(msg string, fields ...zap.Field) {
+func (l *zapLogger) Info(msg string, args ...any) {
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.InfoLevel, msg); ce != nil {
 		fields = append(fields, l.fields...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) WarnWithID(reqID string, msg string, fields ...zap.Field) {
+func (l *zapLogger) WarnWithID(reqID string, msg string, args ...any) {
 	if !l.reqIDLogging {
 		return
 	}
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.WarnLevel, msg); ce != nil {
 		fields = append(fields, l.getFieldsForLog(reqID)...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) Warn(msg string, fields ...zap.Field) {
+func (l *zapLogger) Warn(msg string, args ...any) {
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.WarnLevel, msg); ce != nil {
 		fields = append(fields, l.fields...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) ErrorWithID(reqID string, msg string, fields ...zap.Field) {
+func (l *zapLogger) ErrorWithID(reqID string, msg string, args ...any) {
 	if !l.reqIDLogging {
 		return
 	}
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.ErrorLevel, msg); ce != nil {
 		fields = append(fields, l.getFieldsForLog(reqID)...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) Error(msg string, fields ...zap.Field) {
+func (l *zapLogger) Error(msg string, args ...any) {
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.ErrorLevel, msg); ce != nil {
 		fields = append(fields, l.fields...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) FatalWithID(reqID string, msg string, fields ...zap.Field) {
+func (l *zapLogger) FatalWithID(reqID string, msg string, args ...any) {
 	if !l.reqIDLogging {
 		return
 	}
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.FatalLevel, msg); ce != nil {
 		fields = append(fields, l.getFieldsForLog(reqID)...)
 		ce.Write(fields...)
 	}
 }
 
-func (l *zapLogger) Fatal(msg string, fields ...zap.Field) {
+func (l *zapLogger) Fatal(msg string, args ...any) {
+	fields := makeFields(args)
 	if ce := l.Logger.Check(zap.FatalLevel, msg); ce != nil {
 		fields = append(fields, l.fields...)
 		ce.Write(fields...)

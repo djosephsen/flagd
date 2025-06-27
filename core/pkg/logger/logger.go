@@ -1,9 +1,5 @@
 package logger
 
-import (
-	"go.uber.org/zap"
-)
-
 /*
 This package wraps the zap logging API for use across services without passing a shared logger.
 Fields can be added to a requestID using the WriteFields method, these will be added to any
@@ -35,15 +31,15 @@ const RequestIDFieldName = "requestID"
 
 type Logger interface {
 	DebugWithID(reqID string, msg string, args ...any)
-	Debug(msg string, fields ...zap.Field)
+	Debug(msg string, fields ...any)
 	InfoWithID(reqID string, msg string, args ...any)
-	Info(msg string, fields ...zap.Field)
+	Info(msg string, fields ...any)
 	WarnWithID(reqID string, msg string, args ...any)
-	Warn(msg string, fields ...zap.Field)
+	Warn(msg string, fields ...any)
 	ErrorWithID(reqID string, msg string, args ...any)
-	Error(msg string, fields ...zap.Field)
+	Error(msg string, fields ...any)
 	FatalWithID(reqID string, msg string, args ...any)
 	Fatal(msg string, args ...any)
-	WriteFields(reqID string, args ...any)
-	ClearFields(reqID string)
+	//WriteFields(reqID string, args ...any)
+	//ClearFields(reqID string)
 }
