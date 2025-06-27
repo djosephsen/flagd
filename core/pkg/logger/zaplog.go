@@ -45,11 +45,24 @@ type zapLogger struct {
 // zapLogger explicitly implements Logger
 var _ Logger = &zapLogger{}
 
-func anyToZapField(any) zap.Field{
-    switch
+func makeFields(args ...any) []zap.Field {
+	// if there are an odd number of
+	if len(args)%2 != 0 {
+		lastArg := args[len(args)-1]
+		args[len(args)-1] = "BADKEY!"
+		args = append(args, lastArg)
+	}
+	out := make([]zap.Field, len(args))
+	for i := 0; i < len(args); i += 2 {
+		key := args[i].(string)
+		val := args[i+1]
+		out = append(out, zap.Any(key, val))
+	}
+	return out
 }
 
-func (l *zapLogger) DebugWithID(reqID string, msg string, fields ...zap.Field) {
+func (l *zapLogger) DebugWithID(reqID string, msg string, args ...any) {
+	fields, err := makeFields(args)
 	if !l.reqIDLogging {
 		return
 	}
@@ -59,7 +72,8 @@ func (l *zapLogger) DebugWithID(reqID string, msg string, fields ...zap.Field) {
 	}
 }
 
-func (l *zapLogger) Debug(msg string, fields ...zap.Field) {
+func (l *zapLogger) Debug(msg string, args ...any) {
+	fields := zap.Any(args)
 	if ce := l.Logger.Check(zap.DebugLevel, msg); ce != nil {
 		fields = append(fields, l.fields...)
 		ce.Write(fields...)
