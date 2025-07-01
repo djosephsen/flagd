@@ -68,15 +68,15 @@ func makeAttrs(args ...any) []slog.Attr {
 	}
 	return out
 }
-func (l *slogger) WriteFields(reqID string, fields ...slog.Attr) {
+func (l *slogger) WriteAttrs(reqID string, fields ...slog.Attr) {
 	if !l.reqIDLogging {
 		return
 	}
-	res := append(l.getFields(reqID), fields...)
+	res := append(l.getAttrs(reqID), fields...)
 	l.requestAttrs.Store(reqID, res)
 }
 
-func (l *slogger) getFields(reqID string) []slog.Attr {
+func (l *slogger) getAttrs(reqID string) []slog.Attr {
 	res := []slog.Attr{}
 	f, ok := l.requestAttrs.Load(reqID)
 	if ok {
@@ -89,7 +89,7 @@ func (l *slogger) getFields(reqID string) []slog.Attr {
 }
 
 func (l *slogger) getFieldsForLog(reqID string) []slog.Attr {
-	fields := l.getFields(reqID)
+	fields := l.getAttrs(reqID)
 	fields = append(fields, slog.Any("requestID", reqID))
 	fields = append(fields, l.fields...)
 	return fields
