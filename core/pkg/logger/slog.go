@@ -3,14 +3,12 @@ package logger
 import (
 	"log/slog"
 	"sync"
-
-	"go.uber.org/zap"
 )
 
 type slogger struct {
 	requestAttrs *sync.Map
 	Logger       *slog.Logger
-	reqIdLogging bool
+	reqIDLogging bool
 }
 
 var _ Logger = &slogger{}
@@ -43,7 +41,7 @@ func (l *slogger) FatalWithID(reqID string, msg string, args ...any) {
 
 }
 func (l *slogger) Fatal(msg string, args ...any) {
-	slog.Fatal(msg, makeAttrs(args))
+	//slog.Fatal(msg, makeAttrs(args))
 	// There is no Fatal level in slog.  Is it needed? Should we added it?
 }
 
@@ -75,14 +73,14 @@ func (l *slogger) WriteFields(reqID string, fields ...slog.Attr) {
 		return
 	}
 	res := append(l.getFields(reqID), fields...)
-	l.requestFields.Store(reqID, res)
+	l.requestAttrs.Store(reqID, res)
 }
 
-func (l *slogger) getFields(reqID string) []zap.Field {
-	res := []zap.Field{}
-	f, ok := l.requestFields.Load(reqID)
+func (l *slogger) getFields(reqID string) []slog.Attr {
+	res := []slog.Attr{}
+	f, ok := l.requestAttrs.Load(reqID)
 	if ok {
-		r, ok := f.([]zap.Field)
+		r, ok := f.([]slog.Attr)
 		if ok {
 			res = r
 		}
@@ -90,9 +88,9 @@ func (l *slogger) getFields(reqID string) []zap.Field {
 	return res
 }
 
-func (l *slogger) getFieldsForLog(reqID string) []zap.Field {
+func (l *slogger) getFieldsForLog(reqID string) []slog.Attr {
 	fields := l.getFields(reqID)
-	fields = append(fields, zap.String(RequestIDFieldName, reqID))
+	fields = append(fields, slog.Any("requestID", reqID))
 	fields = append(fields, l.fields...)
 	return fields
 }
@@ -102,5 +100,5 @@ func (l *slogger) ClearFields(reqID string) {
 	if !l.reqIDLogging {
 		return
 	}
-	l.requestFields.Delete(reqID)
+	l.requestAttrs.Delete(reqID)
 }
