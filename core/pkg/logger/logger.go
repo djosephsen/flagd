@@ -1,5 +1,10 @@
 package logger
 
+import (
+	"log/slog"
+	"os"
+)
+
 /*
 This package wraps the zap logging API for use across services without passing a shared logger.
 Fields can be added to a requestID using the WriteFields method, these will be added to any
@@ -40,6 +45,18 @@ type Logger interface {
 	Error(msg string, fields ...any)
 	FatalWithID(reqID string, msg string, args ...any)
 	Fatal(msg string, args ...any)
-	//WriteFields(reqID string, args ...any)
-	//ClearFields(reqID string)
+	With(args ...any) Logger
+	WriteFields(reqID string, args ...any)
+	ClearFields(reqID string)
+}
+
+func New(loggerType string, Debug bool, logFormat string) Logger {
+	if loggerType == "slog" {
+		level := slog.LevelInfo
+		if Debug {
+			level = slog.LevelDebug
+		}
+		return NewSlogLogger(level, logFormat, os.Stdout)
+	}
+	return NewZapLogger(Debug, logFormat)
 }

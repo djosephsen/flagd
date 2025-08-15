@@ -47,7 +47,7 @@ type Sync struct {
 	GrpcDialOptionsOverride []grpc.DialOption
 	CertPath                string
 	CredentialBuilder       grpccredential.Builder
-	Logger                  *logger.Logger
+	Logger                  logger.Logger
 	ProviderID              string
 	Secure                  bool
 	Selector                string
@@ -201,6 +201,7 @@ func (g *Sync) handleFlagSync(stream syncv1grpc.FlagSyncService_SyncFlagsClient,
 
 		dataSync <- sync.DataSync{
 			FlagData: data.FlagConfiguration,
+			SyncContext: data.SyncContext,
 			Source:   g.URI,
 			Selector: g.Selector,
 			Type:     sync.ALL,

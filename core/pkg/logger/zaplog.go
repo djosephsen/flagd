@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
 	"go.uber.org/zap"
@@ -164,11 +165,11 @@ func (l *zapLogger) Fatal(msg string, args ...any) {
 
 // WriteFields adds field key and value pairs to the highest level Logger, they will be applied to all
 // subsequent log calls using the matching requestID
-func (l *zapLogger) WriteFields(reqID string, fields ...zap.Field) {
+func (l *zapLogger) WriteFields(reqID string, fields ...any) {
 	if !l.reqIDLogging {
 		return
 	}
-	res := append(l.getFields(reqID), fields...)
+	res := append(l.getFields(reqID), makeFields(fields)...)
 	l.requestFields.Store(reqID, res)
 }
 
@@ -200,7 +201,11 @@ func (l *zapLogger) ClearFields(reqID string) {
 }
 
 // NewZapLogger creates a *zap.Logger using the base config
-func NewZapLogger(level zapcore.Level, logFormat string) (*zap.Logger, error) {
+func NewZapLogger(Debug bool, logFormat string) Logger {
+	level := zapcore.InfoLevel
+	if Debug {
+		level = zapcore.DebugLevel
+	}
 	cfg := zap.Config{
 		Encoding:         logFormat,
 		Level:            zap.NewAtomicLevelAt(level),
@@ -224,35 +229,24 @@ func NewZapLogger(level zapcore.Level, logFormat string) (*zap.Logger, error) {
 	}
 	l, err := cfg.Build()
 	if err != nil {
-		return nil, fmt.Errorf("unable to build logger from config: %w", err)
-	}
-	return l, nil
-}
-
-// NewLogger returns the logging wrapper for a given *zap.logger.
-// Noop logger bypasses the setting of fields, improving performance.
-// If *zap.Logger is nil a noop logger is set
-// and the reqIDLogging argument is overwritten to false
-func NewLogger(logger *zap.Logger, reqIDLogging bool) *zapLogger {
-	if logger == nil {
-		reqIDLogging = false
-		logger = zap.New(nil)
+		log.Fatalf("cant initialize the zap logger: %v", fmt.Errorf("unable to build logger from config: %w", err))
 	}
 	return &zapLogger{
-		Logger:        logger.WithOptions(zap.AddCallerSkip(1)),
+		Logger:        l.WithOptions(zap.AddCallerSkip(1)),
+		fields:        []zap.Field{},
 		requestFields: &sync.Map{},
-		reqIDLogging:  reqIDLogging,
+		reqIDLogging:  Debug,
 	}
 }
 
 // WithFields creates a new logging wrapper with a predefined base set of fields.
 // These fields will be added to each request, but the logger will still
 // read/write from the highest level logging wrappers field pool
-func (l *zapLogger) WithFields(fields ...zap.Field) *zapLogger {
+func (l *zapLogger) With(fields ...any) Logger {
 	return &zapLogger{
 		Logger:        l.Logger,
 		requestFields: l.requestFields,
-		fields:        fields,
+		fields:        makeFields(fields),
 		reqIDLogging:  l.reqIDLogging,
 	}
 }

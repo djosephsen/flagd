@@ -114,7 +114,7 @@ func (f *State) GetAll(_ context.Context) (map[string]model.Flag, model.Metadata
 }
 
 // Add new flags from source.
-func (f *State) Add(logger *logger.Logger, source string, selector string, flags map[string]model.Flag,
+func (f *State) Add(logger logger.Logger, source string, selector string, flags map[string]model.Flag,
 ) map[string]interface{} {
 	notifications := map[string]interface{}{}
 
@@ -147,7 +147,7 @@ func (f *State) Add(logger *logger.Logger, source string, selector string, flags
 }
 
 // Update existing flags from source.
-func (f *State) Update(logger *logger.Logger, source string, selector string, flags map[string]model.Flag,
+func (f *State) Update(logger logger.Logger, source string, selector string, flags map[string]model.Flag,
 ) map[string]interface{} {
 	notifications := map[string]interface{}{}
 
@@ -187,7 +187,7 @@ func (f *State) Update(logger *logger.Logger, source string, selector string, fl
 }
 
 // DeleteFlags matching flags from source.
-func (f *State) DeleteFlags(logger *logger.Logger, source string, flags map[string]model.Flag) map[string]interface{} {
+func (f *State) DeleteFlags(logger logger.Logger, source string, flags map[string]model.Flag) map[string]interface{} {
 	logger.Debug(
 		fmt.Sprintf(
 			"store resync triggered: delete event from source %s",
@@ -252,7 +252,7 @@ func (f *State) DeleteFlags(logger *logger.Logger, source string, flags map[stri
 // Merge provided flags from source with currently stored flags.
 // nolint: funlen
 func (f *State) Merge(
-	logger *logger.Logger,
+	logger logger.Logger,
 	source string,
 	selector string,
 	flags map[string]model.Flag,
