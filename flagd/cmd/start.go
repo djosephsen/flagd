@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 const (
@@ -122,21 +120,9 @@ var startCmd = &cobra.Command{
 	Short: "Start flagd",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		// Configure loggers -------------------------------------------------------
-		var level zapcore.Level
-		var err error
-		if Debug {
-			level = zapcore.DebugLevel
-		} else {
-			level = zapcore.InfoLevel
-		}
-		l, err := logger.NewZapLogger(level, viper.GetString(logFormatFlagName))
-		if err != nil {
-			log.Fatalf("can't initialize zap logger: %v", err)
-		}
-		logger := logger.NewLogger(l, Debug)
-		rtLogger := logger.WithFields(zap.String("component", "start"))
+		l := logger.New("slog", Debug, viper.GetString(logFormatFlagName))
 
+		rtLogger := l.With("component", "start")
 		rtLogger.Info(fmt.Sprintf("flagd version: %s (%s), built at: %s", Version, Commit, Date))
 
 		syncProviders, err := syncbuilder.ParseSyncProviderURIs(viper.GetStringSlice(uriFlagName))

@@ -19,7 +19,7 @@ const (
 
 // Deprecated: LegacyFractional is deprecated. This will be removed prior to v1 release.
 type LegacyFractional struct {
-	Logger *logger.Logger
+	Logger logger.Logger
 }
 
 type legacyFractionalEvaluationDistribution struct {
@@ -27,7 +27,7 @@ type legacyFractionalEvaluationDistribution struct {
 	percentage int
 }
 
-func NewLegacyFractional(logger *logger.Logger) *LegacyFractional {
+func NewLegacyFractional(logger logger.Logger) *LegacyFractional {
 	return &LegacyFractional{Logger: logger}
 }
 

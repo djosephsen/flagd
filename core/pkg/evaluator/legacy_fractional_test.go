@@ -271,7 +271,7 @@ func TestLegacyFractionalEvaluation(t *testing.T) {
 	const reqID = "default"
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			log := logger.NewLogger(nil, false)
+			log := logger.NewSlogLogger(nil, false)
 			je := NewJSON(log, store.NewFlags())
 			je.store.Flags = tt.flags.Flags
 

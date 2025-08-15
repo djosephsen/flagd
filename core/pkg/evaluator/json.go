@@ -22,7 +22,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
 	"golang.org/x/exp/maps"
 )
 
@@ -65,15 +64,15 @@ func WithEvaluator(name string, evalFunc func(interface{}, interface{}) interfac
 // JSON evaluator
 type JSON struct {
 	store          *store.State
-	Logger         *logger.Logger
+	Logger         logger.Logger
 	jsonEvalTracer trace.Tracer
 	Resolver
 }
 
-func NewJSON(logger *logger.Logger, s *store.State, opts ...JSONEvaluatorOption) *JSON {
-	logger = logger.WithFields(
-		zap.String("component", "evaluator"),
-		zap.String("evaluator", "json"),
+func NewJSON(logger logger.Logger, s *store.State, opts ...JSONEvaluatorOption) *JSON {
+	logger = logger.With(
+		"component", "evaluator",
+		"evaluator", "json",
 	)
 	tracer := otel.Tracer("jsonEvaluator")
 
@@ -142,11 +141,11 @@ func (je *JSON) SetState(payload sync.DataSync) (map[string]interface{}, bool, e
 // Resolver implementation for flagd flags. This resolver should be kept reusable, hence must interact with interfaces.
 type Resolver struct {
 	store  store.IStore
-	Logger *logger.Logger
+	Logger logger.Logger
 	tracer trace.Tracer
 }
 
-func NewResolver(store store.IStore, logger *logger.Logger, jsonEvalTracer trace.Tracer) Resolver {
+func NewResolver(store store.IStore, logger logger.Logger, jsonEvalTracer trace.Tracer) Resolver {
 	// register supported json logic custom operator implementations
 	jsonlogic.AddOperator(FractionEvaluationName, NewFractional(logger).Evaluate)
 	jsonlogic.AddOperator(StartsWithEvaluationName, NewStringComparisonEvaluator(logger).StartsWithEvaluation)
@@ -401,7 +400,7 @@ func (je *Resolver) evaluateVariant(ctx context.Context, reqID string, flagKey s
 }
 
 func setFlagdProperties(
-	log *logger.Logger,
+	log logger.Logger,
 	context map[string]any,
 	properties flagdProperties,
 ) map[string]any {
@@ -439,7 +438,7 @@ func getFlagdProperties(context map[string]any) (flagdProperties, bool) {
 	return p, true
 }
 
-func loadAndCompileSchema(log *logger.Logger) *gojsonschema.Schema {
+func loadAndCompileSchema(log logger.Logger) *gojsonschema.Schema {
 	schemaLoader := gojsonschema.NewSchemaLoader()
 
 	// compile dependency schema
@@ -459,16 +458,16 @@ func loadAndCompileSchema(log *logger.Logger) *gojsonschema.Schema {
 }
 
 // configToFlagDefinition convert string configurations to flags and store them to pointer newFlags
-func configToFlagDefinition(log *logger.Logger, config string, definition *Definition) error {
+func configToFlagDefinition(log logger.Logger, config string, definition *Definition) error {
 	compiledSchema := loadAndCompileSchema(log)
 
 	flagStringLoader := gojsonschema.NewStringLoader(config)
 
 	result, err := compiledSchema.Validate(flagStringLoader)
 	if err != nil {
-		log.Logger.Warn(fmt.Sprintf("failed to execute JSON schema validation: %s", err))
+		log.Warn(fmt.Sprintf("failed to execute JSON schema validation: %s", err))
 	} else if !result.Valid() {
-		log.Logger.Warn(fmt.Sprintf(
+		log.Warn(fmt.Sprintf(
 			"flag definition does not conform to the schema; validation errors: %s", buildErrorString(result.Errors()),
 		))
 	}
