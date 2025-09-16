@@ -21,25 +21,25 @@ type ISyncService interface {
 	Start(context.Context) error
 
 	// Emit updates for sync listeners
-	Emit(isResync bool, source string)
+	Emit(source string)
 }
 
 type SvcConfigurations struct {
-	Logger         *logger.Logger
-	Port           uint16
-	Sources        []string
-	Store          *store.State
-	ContextValues  map[string]any
-	CertPath       string
-	KeyPath        string
-	SocketPath     string
-	StreamDeadline time.Duration
+	Logger              *logger.Logger
+	Port                uint16
+	Sources             []string
+	Store               store.IStore
+	ContextValues       map[string]any
+	CertPath            string
+	KeyPath             string
+	SocketPath          string
+	StreamDeadline      time.Duration
+	DisableSyncMetadata bool
 }
 
 type Service struct {
 	listener net.Listener
 	logger   *logger.Logger
-	mux      *Multiplexer
 	server   *grpc.Server
 
 	startupTracker syncTracker
@@ -65,7 +65,6 @@ func loadTLSCredentials(certPath string, keyPath string) (credentials.TransportC
 func NewSyncService(cfg SvcConfigurations) (*Service, error) {
 	var err error
 	l := cfg.Logger
-	mux, err := NewMux(cfg.Store, cfg.Sources)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing multiplexer: %w", err)
 	}
@@ -82,10 +81,11 @@ func NewSyncService(cfg SvcConfigurations) (*Service, error) {
 	}
 
 	syncv1grpc.RegisterFlagSyncServiceServer(server, &syncHandler{
-		mux:           mux,
-		log:           l,
-		contextValues: cfg.ContextValues,
-		deadline:      cfg.StreamDeadline,
+		store:               cfg.Store,
+		log:                 l,
+		contextValues:       cfg.ContextValues,
+		deadline:            cfg.StreamDeadline,
+		disableSyncMetadata: cfg.DisableSyncMetadata,
 	})
 
 	var lis net.Listener
@@ -103,7 +103,6 @@ func NewSyncService(cfg SvcConfigurations) (*Service, error) {
 	return &Service{
 		listener: lis,
 		logger:   l,
-		mux:      mux,
 		server:   server,
 		startupTracker: syncTracker{
 			sources:  slices.Clone(cfg.Sources),
@@ -149,16 +148,8 @@ func (s *Service) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) Emit(isResync bool, source string) {
+func (s *Service) Emit(source string) {
 	s.startupTracker.trackAndRemove(source)
-
-	if !isResync {
-		err := s.mux.Publish()
-		if err != nil {
-			s.logger.Warn(fmt.Sprintf("error while publishing sync streams: %v", err))
-			return
-		}
-	}
 }
 
 func (s *Service) shutdown() {

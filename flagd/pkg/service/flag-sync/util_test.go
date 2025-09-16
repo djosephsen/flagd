@@ -5,46 +5,57 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"testing"
 
+	"github.com/open-feature/flagd/core/pkg/logger"
 	"github.com/open-feature/flagd/core/pkg/model"
 	"github.com/open-feature/flagd/core/pkg/store"
 	"google.golang.org/grpc/credentials"
 )
 
-// getSimpleFlagStore returns a flag store pre-filled with flags from sources A & B & C, which C empty
-func getSimpleFlagStore() (*store.State, []string) {
-	variants := map[string]any{
-		"true":  true,
-		"false": false,
-	}
-
-	flagStore := store.NewFlags()
-
-	flagStore.Set("flagA", model.Flag{
+var testSource1 = "testSource1"
+var testSource2 = "testSource2"
+var testVariants = map[string]any{
+	"true":  true,
+	"false": false,
+}
+var testSource1Flags = map[string]model.Flag{
+	"flagA": {
 		State:          "ENABLED",
 		DefaultVariant: "false",
-		Variants:       variants,
-		Source:         "A",
-	})
-
-	flagStore.Set("flagB", model.Flag{
+		Variants:       testVariants,
+	},
+}
+var testSource2Flags = map[string]model.Flag{
+	"flagB": {
 		State:          "ENABLED",
 		DefaultVariant: "true",
-		Variants:       variants,
-		Source:         "B",
-	})
+		Variants:       testVariants,
+	},
+}
 
-	flagStore.MetadataPerSource["A"] = model.Metadata{
+// getSimpleFlagStore is a test util which returns a flag store pre-filled with flags from sources testSource1 and testSource2.
+func getSimpleFlagStore(t testing.TB) (store.IStore, []string) {
+	t.Helper()
+
+	sources := []string{testSource1, testSource2}
+
+	flagStore, err := store.NewStore(logger.NewLogger(nil, false), sources)
+	if err != nil {
+		t.Fatalf("error creating flag store: %v", err)
+	}
+
+	flagStore.Update(testSource1, testSource1Flags, model.Metadata{
 		"keyDuped": "value",
 		"keyA":     "valueA",
-	}
+	})
 
-	flagStore.MetadataPerSource["B"] = model.Metadata{
+	flagStore.Update(testSource2, testSource2Flags, model.Metadata{
 		"keyDuped": "value",
 		"keyB":     "valueB",
-	}
+	})
 
-	return flagStore, []string{"A", "B", "C"}
+	return flagStore, sources
 }
 
 func loadTLSClientCredentials(certPath string) (credentials.TransportCredentials, error) {

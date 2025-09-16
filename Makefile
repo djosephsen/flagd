@@ -1,7 +1,7 @@
 PHONY: .docker-build .build .run .mockgen
 PREFIX=/usr/local
 PUBLIC_JSON_SCHEMA_DIR=docs/schema/v0/
-ALL_GO_MOD_DIRS := $(shell find . -type f -name 'go.mod' -exec dirname {} \; | sort)
+ALL_GO_MOD_DIRS := $(shell find . -path ./test/integration -prune -o -type f -name 'go.mod' -exec dirname {} \; | sort)
 
 FLAGD_DEV_NAMESPACE ?= flagd-dev
 ZD_TEST_NAMESPACE_FLAGD_PROXY ?= flagd-proxy-zd-test
@@ -47,12 +47,19 @@ test-flagd:
 	go test -race -covermode=atomic -cover -short ./flagd/pkg/... -coverprofile=flagd-coverage.out
 test-flagd-proxy:
 	go test -race -covermode=atomic -cover -short ./flagd-proxy/pkg/... -coverprofile=flagd-proxy-coverage.out
-flagd-integration-test: # dependent on ./bin/flagd start -f file:test-harness/flags/testing-flags.json -f file:test-harness/flags/custom-ops.json -f file:test-harness/flags/evaluator-refs.json -f file:test-harness/flags/zero-flags.json
-	go test -cover ./test/integration $(ARGS)
+flagd-benchmark-test:
+	go test -bench=Bench -short -benchtime=5s -benchmem ./core/... | tee benchmark.txt
+flagd-integration-test-harness:
+# target used to start a locally built flagd with the e2e flags
+	cd flagd; go run main.go start -f file:../test-harness/flags/testing-flags.json -f file:../test-harness/flags/custom-ops.json -f file:../test-harness/flags/evaluator-refs.json -f file:../test-harness/flags/zero-flags.json -f file:../test-harness/flags/edge-case-flags.json
+flagd-integration-test: # dependent on flagd-e2e-test-harness if not running in github actions
+	go test -count=1 -cover ./test/integration $(ARGS)
 run: # default to flagd
 	make run-flagd
 run-flagd:
-	cd flagd; go run main.go start -f file:../config/samples/example_flags.flagd.json
+	cd flagd; go run main.go start -f file:../config/samples/example_flags.flagd.json 
+run-flagd-selector-demo:
+	cd flagd; go run main.go start -f file:../config/samples/example_flags.flagd.json -f file:../config/samples/example_flags.flagd.2.json
 install:
 	cp systemd/flagd.service /etc/systemd/system/flagd.service
 	mkdir -p /etc/flagd

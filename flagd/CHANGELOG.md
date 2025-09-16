@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.12.9](https://github.com/open-feature/flagd/compare/flagd/v0.12.8...flagd/v0.12.9) (2025-07-28)
+
+
+### ✨ New Features
+
+* Add toggle for disabling getMetadata request ([#1693](https://github.com/open-feature/flagd/issues/1693)) ([e8fd680](https://github.com/open-feature/flagd/commit/e8fd6808608caa7ff7e54792fe97d88e7c294486))
+
+## [0.12.8](https://github.com/open-feature/flagd/compare/flagd/v0.12.7...flagd/v0.12.8) (2025-07-21)
+
+
+### 🐛 Bug Fixes
+
+* update to latest otel semconv ([#1668](https://github.com/open-feature/flagd/issues/1668)) ([81855d7](https://github.com/open-feature/flagd/commit/81855d76f94a09251a19a05f830cc1d11ab6b566))
+
+
+### 🧹 Chore
+
+* **deps:** update module github.com/open-feature/flagd/core to v0.11.8 ([#1685](https://github.com/open-feature/flagd/issues/1685)) ([c07ffba](https://github.com/open-feature/flagd/commit/c07ffba55426d538224d8564be5f35339d2258d0))
+
+## [0.12.7](https://github.com/open-feature/flagd/compare/flagd/v0.12.6...flagd/v0.12.7) (2025-07-15)
+
+
+### 🧹 Chore
+
+* **deps:** update module github.com/open-feature/flagd/core to v0.11.6 ([#1683](https://github.com/open-feature/flagd/issues/1683)) ([b6da282](https://github.com/open-feature/flagd/commit/b6da282f8a98082ba3733593d501d14842cbd97f))
+
+## [0.12.6](https://github.com/open-feature/flagd/compare/flagd/v0.12.5...flagd/v0.12.6) (2025-07-10)
+
+
+### 🐛 Bug Fixes
+
+* **security:** update module github.com/go-viper/mapstructure/v2 to v2.3.0 [security] ([#1667](https://github.com/open-feature/flagd/issues/1667)) ([caa0ed0](https://github.com/open-feature/flagd/commit/caa0ed04eb9d5d01136deb71b8fcc4da72aa1910))
+
+
+### ✨ New Features
+
+* add sync_context to SyncFlags ([#1642](https://github.com/open-feature/flagd/issues/1642)) ([07a45d9](https://github.com/open-feature/flagd/commit/07a45d9b2275584fa92ff33cbe5e5c7d7864db38))
+
 ## [0.12.5](https://github.com/open-feature/flagd/compare/flagd/v0.12.4...flagd/v0.12.5) (2025-06-13)
 
 

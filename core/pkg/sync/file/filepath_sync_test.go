@@ -26,7 +26,6 @@ func TestSimpleReSync(t *testing.T) {
 	expectedDataSync := sync.DataSync{
 		FlagData: "hello",
 		Source:   source,
-		Type:     sync.ALL,
 	}
 	handler := Sync{
 		URI:    source,
@@ -76,7 +75,6 @@ func TestSimpleSync(t *testing.T) {
 				{
 					FlagData: fetchFileContents,
 					Source:   fmt.Sprintf("%s/%s", readDirName, fetchFileName),
-					Type:     sync.ALL,
 				},
 			},
 		},
@@ -94,12 +92,10 @@ func TestSimpleSync(t *testing.T) {
 				{
 					FlagData: fetchFileContents,
 					Source:   fmt.Sprintf("%s/%s", updateDirName, fetchFileName),
-					Type:     sync.ALL,
 				},
 				{
 					FlagData: "new content",
 					Source:   fmt.Sprintf("%s/%s", updateDirName, fetchFileName),
-					Type:     sync.ALL,
 				},
 			},
 		},
@@ -117,12 +113,10 @@ func TestSimpleSync(t *testing.T) {
 				{
 					FlagData: fetchFileContents,
 					Source:   fmt.Sprintf("%s/%s", deleteDirName, fetchFileName),
-					Type:     sync.ALL,
 				},
 				{
 					FlagData: defaultState,
 					Source:   fmt.Sprintf("%s/%s", deleteDirName, fetchFileName),
-					Type:     sync.DELETE,
 				},
 			},
 		},
@@ -171,9 +165,6 @@ func TestSimpleSync(t *testing.T) {
 					}
 					if data.Source != syncEvent.Source {
 						t.Errorf("expected source: %s, but received source: %s", syncEvent.Source, data.Source)
-					}
-					if data.Type != syncEvent.Type {
-						t.Errorf("expected type: %b, but received type: %b", syncEvent.Type, data.Type)
 					}
 				case <-time.After(10 * time.Second):
 					t.Errorf("event not found, timeout out after 10 seconds")

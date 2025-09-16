@@ -39,6 +39,7 @@ type Config struct {
 	SyncServicePort       uint16
 	SyncServiceSocketPath string
 	StreamDeadline        time.Duration
+	DisableSyncMetadata   bool
 
 	SyncProviders []sync.SourceConfig
 	CORS          []string
@@ -78,21 +79,20 @@ func FromConfig(logger *logger.Logger, version string, config Config) (*Runtime,
 		logger.Error(fmt.Sprintf("error building metrics recorder: %v", err))
 	}
 
-	// build flag store, collect flag sources & fill sources details
-	s := store.NewFlags()
 	sources := []string{}
 
 	for _, provider := range config.SyncProviders {
-		s.FlagSources = append(s.FlagSources, provider.URI)
-		s.SourceDetails[provider.URI] = store.SourceDetails{
-			Source:   provider.URI,
-			Selector: provider.Selector,
-		}
 		sources = append(sources, provider.URI)
 	}
 
+	// build flag store, collect flag sources & fill sources details
+	store, err := store.NewStore(logger, sources)
+	if err != nil {
+		return nil, fmt.Errorf("error creating flag store: %w", err)
+	}
+
 	// derive evaluator
-	jsonEvaluator := evaluator.NewJSON(logger, s)
+	jsonEvaluator := evaluator.NewJSON(logger, store)
 
 	// derive services
 
@@ -100,6 +100,7 @@ func FromConfig(logger *logger.Logger, version string, config Config) (*Runtime,
 	connectService := flageval.NewConnectService(
 		logger.WithFields(zap.String("component", "service")),
 		jsonEvaluator,
+		store,
 		recorder)
 
 	// ofrep service
@@ -111,20 +112,21 @@ func FromConfig(logger *logger.Logger, version string, config Config) (*Runtime,
 		config.HeaderToContextKeyMappings,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("error creating ofrep service")
+		return nil, fmt.Errorf("error creating OFREP service: %w", err)
 	}
 
 	// flag sync service
 	flagSyncService, err := flagsync.NewSyncService(flagsync.SvcConfigurations{
-		Logger:         logger.WithFields(zap.String("component", "FlagSyncService")),
-		Port:           config.SyncServicePort,
-		Sources:        sources,
-		Store:          s,
-		ContextValues:  config.ContextValues,
-		KeyPath:        config.ServiceKeyPath,
-		CertPath:       config.ServiceCertPath,
-		SocketPath:     config.SyncServiceSocketPath,
-		StreamDeadline: config.StreamDeadline,
+		Logger:              logger.WithFields(zap.String("component", "FlagSyncService")),
+		Port:                config.SyncServicePort,
+		Sources:             sources,
+		Store:               store,
+		ContextValues:       config.ContextValues,
+		KeyPath:             config.ServiceKeyPath,
+		CertPath:            config.ServiceCertPath,
+		SocketPath:          config.SyncServiceSocketPath,
+		StreamDeadline:      config.StreamDeadline,
+		DisableSyncMetadata: config.DisableSyncMetadata,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error creating sync service: %w", err)
@@ -144,11 +146,11 @@ func FromConfig(logger *logger.Logger, version string, config Config) (*Runtime,
 	}
 
 	return &Runtime{
-		Logger:       logger.WithFields(zap.String("component", "runtime")),
-		Evaluator:    jsonEvaluator,
-		FlagSync:     flagSyncService,
-		OfrepService: ofrepService,
-		Service:      connectService,
+		Logger:            logger.WithFields(zap.String("component", "runtime")),
+		Evaluator:         jsonEvaluator,
+		SyncService:       flagSyncService,
+		OfrepService:      ofrepService,
+		EvaluationService: connectService,
 		ServiceConfig: service.Configuration{
 			Port:                       config.ServicePort,
 			ManagementPort:             config.ManagementPort,
@@ -162,7 +164,7 @@ func FromConfig(logger *logger.Logger, version string, config Config) (*Runtime,
 			HeaderToContextKeyMappings: config.HeaderToContextKeyMappings,
 			StreamDeadline:             config.StreamDeadline,
 		},
-		SyncImpl: iSyncs,
+		Syncs: iSyncs,
 	}, nil
 }
 

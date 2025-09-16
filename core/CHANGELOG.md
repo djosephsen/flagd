@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.12.1](https://github.com/open-feature/flagd/compare/core/v0.12.0...core/v0.12.1) (2025-07-28)
+
+
+### 🧹 Chore
+
+* add back file-delete test ([#1694](https://github.com/open-feature/flagd/issues/1694)) ([750aa17](https://github.com/open-feature/flagd/commit/750aa176b5a8dd24a9daaff985ff6efeb084c758))
+* fix benchmark ([#1698](https://github.com/open-feature/flagd/issues/1698)) ([5e2d7d7](https://github.com/open-feature/flagd/commit/5e2d7d7176ba05e667cd92acd7decb531a8de2f6))
+
+## [0.12.0](https://github.com/open-feature/flagd/compare/core/v0.11.8...core/v0.12.0) (2025-07-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove sync.Type ([#1691](https://github.com/open-feature/flagd/issues/1691))
+
+### 🐛 Bug Fixes
+
+* update to latest otel semconv ([#1668](https://github.com/open-feature/flagd/issues/1668)) ([81855d7](https://github.com/open-feature/flagd/commit/81855d76f94a09251a19a05f830cc1d11ab6b566))
+
+
+### ✨ New Features
+
+* Add support for HTTP eTag header and 304 no change response ([#1645](https://github.com/open-feature/flagd/issues/1645)) ([ea3be4f](https://github.com/open-feature/flagd/commit/ea3be4f9010644132795bb60b36fb7705f901b62))
+* remove sync.Type ([#1691](https://github.com/open-feature/flagd/issues/1691)) ([ac647e0](https://github.com/open-feature/flagd/commit/ac647e065636071f5bc065a9a084461cea692166))
+
+## [0.11.8](https://github.com/open-feature/flagd/compare/core/v0.11.7...core/v0.11.8) (2025-07-15)
+
+
+### 🧹 Chore
+
+* **deps:** update github.com/open-feature/flagd-schemas digest to 08b4c52 ([#1682](https://github.com/open-feature/flagd/issues/1682)) ([68d04e2](https://github.com/open-feature/flagd/commit/68d04e21e63c63d6054fcd6aebfb864e8b3a597e))
+
+## [0.11.7](https://github.com/open-feature/flagd/compare/core/v0.11.6...core/v0.11.7) (2025-07-15)
+
+
+### 🐛 Bug Fixes
+
+* general err if targeting variant not in variants ([#1680](https://github.com/open-feature/flagd/issues/1680)) ([6cabfc8](https://github.com/open-feature/flagd/commit/6cabfc8ff3bd4ad69699a72724495e84cdec0cc3))
+
+## [0.11.6](https://github.com/open-feature/flagd/compare/core/v0.11.5...core/v0.11.6) (2025-07-10)
+
+
+### ✨ New Features
+
+* add sync_context to SyncFlags ([#1642](https://github.com/open-feature/flagd/issues/1642)) ([07a45d9](https://github.com/open-feature/flagd/commit/07a45d9b2275584fa92ff33cbe5e5c7d7864db38))
+* allowing null/missing defaultValue ([#1659](https://github.com/open-feature/flagd/issues/1659)) ([3f6b78c](https://github.com/open-feature/flagd/commit/3f6b78c8ccab75e9c07d26741c4b206fd0b722ee))
+
 ## [0.11.5](https://github.com/open-feature/flagd/compare/core/v0.11.4...core/v0.11.5) (2025-06-13)
 
 
